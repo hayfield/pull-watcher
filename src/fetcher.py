@@ -42,12 +42,30 @@ def fetch_url(url):
 def url_base():
 	return 'https://api.github.com/'
 
+def repo_last_update_file():
+	return os.path.join(repo_dir(), 'last-update')
+
+def repo_get_last_update():
+	lastUpdateFile = repo_last_update_file()
+	if os.path.exists(lastUpdateFile):
+		f = open(lastUpdateFile, 'r')
+		return f.readline()
+	else:
+		return datetime.min.isoformat()
+
+def repo_store_last_update(lastUpdate):
+	lastUpdateFile = repo_last_update_file()
+	f = open(lastUpdateFile, 'w')
+	f.write(lastUpdate.isoformat())
+
 def fetch_repo():
 	r = fetch_url( url_base() + 'repos/' + get_args().user + '/' + get_args().repo )
 	data = json.loads(r.text)
-	updateDate = data['updated_at']
-	date = datetime.strptime('2012-11-27T16:22:34Z', '%Y-%m-%dT%H:%M:%SZ')
-	print date
+	updateDate = data['updated_at'][:-1]
+	dateNow = datetime.strptime(updateDate, '%Y-%m-%dT%H:%M:%S')
+	lastDate = datetime.strptime(repo_get_last_update(), '%Y-%m-%dT%H:%M:%S')
+	if dateNow > lastDate:
+		repo_store_last_update(dateNow)
 
 def data_dir():
 	return os.path.join('..', 'data')
