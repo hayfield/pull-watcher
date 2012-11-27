@@ -64,14 +64,21 @@ def fetch_repo():
 	updateDate = data['updated_at'][:-1]
 	dateNow = datetime.strptime(updateDate, '%Y-%m-%dT%H:%M:%S')
 	lastDate = datetime.strptime(repo_get_last_update(), '%Y-%m-%dT%H:%M:%S')
-	if dateNow > lastDate:
+	if dateNow > lastDate or True:
 		repo_store_last_update(dateNow)
+		fetch_pull_reqs()
+
+def fetch_pull_reqs():
+	return 5
 
 def data_dir():
 	return os.path.join('..', 'data')
 
 def repo_dir():
 	return os.path.join(data_dir(), get_args().user, get_args().repo)
+
+def pull_reqs_dir():
+	return os.path.join(repo_dir(), 'pull-requests')
 
 def setup_folders():
 	# the main data folder
@@ -84,15 +91,20 @@ def setup_folders():
 	if not os.path.exists(repoDir):
 		os.makedirs(repoDir)
 
+	# the pull reqs folder
+	pullReqsDir = pull_reqs_dir()
+	if not os.path.exists(pullReqsDir):
+		os.makedirs(pullReqsDir)
+
 def main():
 	args = get_args()
+	setup_folders()
 
 	print args
 
 	fetch_url('henry')
-	fetch_url('https://api.github.com/rate_limit')
-	fetch_repo()
-	setup_folders()
+	#fetch_url('https://api.github.com/rate_limit')
+	#fetch_repo()
 
 if __name__ == "__main__":
 	main()
