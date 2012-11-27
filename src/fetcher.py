@@ -6,12 +6,12 @@ import json
 from datetime import datetime
 import os
 
-READ_ARGS = None
+READ_ARGS = False
 
 def get_args():
 	global READ_ARGS
 
-	if READ_ARGS == None:
+	if type(READ_ARGS) is bool:
 		parser = argparse.ArgumentParser(description='Create a fetcher.')
 		parser.add_argument('-user', type=str, nargs=1)
 		parser.add_argument('-repo', type=str, nargs=1)
@@ -23,20 +23,20 @@ def get_args():
 		print args
 
 		if args.token == None:
-			f = open('../github-token.elephant', 'r')
+			f = open(os.path.join('..', 'github-token.elephant'), 'r')
 			args.token = f.readline()
 		else:
 			args.token = args.token[0]
 
-		return args
-	else:
-		return READ_ARGS
+		READ_ARGS = args
+	
+	return READ_ARGS
 
 def fetch_url(url):
 	print url
 	if url.find('https://api.github.com') == 0:
 		r = requests.get(url + '?access_token=' + get_args().token)
-		print r.text
+		#print r.text
 		return r
 
 def url_base():
