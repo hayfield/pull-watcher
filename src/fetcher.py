@@ -81,20 +81,11 @@ def pull_reqs_dir():
 	return os.path.join(repo_dir(), 'pull-requests')
 
 def setup_folders():
-	# the main data folder
-	dataDir = data_dir()
-	if not os.path.exists(dataDir):
-		os.makedirs(dataDir)
+	folders = [data_dir(), repo_dir(), pull_reqs_dir()]
 
-	# the repo folder
-	repoDir = repo_dir()
-	if not os.path.exists(repoDir):
-		os.makedirs(repoDir)
-
-	# the pull reqs folder
-	pullReqsDir = pull_reqs_dir()
-	if not os.path.exists(pullReqsDir):
-		os.makedirs(pullReqsDir)
+	for folder in folders:
+		if not os.path.exists(folder):
+			os.makedirs(folder)
 
 def main():
 	args = get_args()
