@@ -36,3 +36,6 @@ nosetests.xml
 
 # Elephant files
 *.elephant
+
+# data
+data/
