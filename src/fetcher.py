@@ -6,24 +6,31 @@ import json
 from datetime import datetime
 import os
 
+READ_ARGS = None
+
 def get_args():
-	parser = argparse.ArgumentParser(description='Create a fetcher.')
-	parser.add_argument('-user', type=str, nargs=1)
-	parser.add_argument('-repo', type=str, nargs=1)
-	parser.add_argument('-token', type=str, nargs=1)
-	args = parser.parse_args()
+	global READ_ARGS
 
-	args.user = args.user[0]
-	args.repo = args.repo[0]
-	print args
+	if READ_ARGS == None:
+		parser = argparse.ArgumentParser(description='Create a fetcher.')
+		parser.add_argument('-user', type=str, nargs=1)
+		parser.add_argument('-repo', type=str, nargs=1)
+		parser.add_argument('-token', type=str, nargs=1)
+		args = parser.parse_args()
 
-	if args.token == None:
-		f = open('../github-token.elephant', 'r')
-		args.token = f.readline()
+		args.user = args.user[0]
+		args.repo = args.repo[0]
+		print args
+
+		if args.token == None:
+			f = open('../github-token.elephant', 'r')
+			args.token = f.readline()
+		else:
+			args.token = args.token[0]
+
+		return args
 	else:
-		args.token = args.token[0]
-
-	return args
+		return READ_ARGS
 
 def fetch_url(url):
 	print url
