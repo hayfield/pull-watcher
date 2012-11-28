@@ -82,7 +82,7 @@ def fetch_repo():
 	updateDate = data['updated_at'][:-1]
 	dateNow = datetime.strptime(updateDate, '%Y-%m-%dT%H:%M:%S')
 	lastDate = datetime.strptime(repo_get_last_update(), '%Y-%m-%dT%H:%M:%S')
-	if dateNow > lastDate:
+	if dateNow > lastDate or True:
 		repo_store_last_update(dateNow)
 		fetch_pull_reqs()
 
@@ -157,24 +157,31 @@ def fetch_pull_reqs():
 	data = json.loads(r.text)
 	# loop through the pull reqs
 	for pullReq in data:
-		num = pullReq['number']
-		updateDate = pullReq['updated_at'][:-1]
-		dateNow = datetime.strptime(updateDate, '%Y-%m-%dT%H:%M:%S')
-		lastDate = datetime.strptime(pull_req_get_last_update(num), '%Y-%m-%dT%H:%M:%S')
-		# with each one, check that it's been updated since we last checked
-		if dateNow > lastDate:
-			pull_req_store_last_update(num, dateNow)
+		# only care if the pull req is open
+		if pullReq['state'] == 'open':
+			# with each one...
+			num = pullReq['number']
 			shaHead = pullReq['head']['sha']
 			lastSha = pull_req_get_last_sha(num)
-			# and that the commits inside have changed
-			if shaHead != lastSha:
-				pull_req_store_last_sha(num, shaHead)
-				# if it's open and properly merged into master
-				if pullReq['state'] == 'open' and merged_master( master_sha(), shaHead ):
-					download_zipball(num, shaHead)
-				else:
-					# if master hasn't been merged in, tell someone to sort it out
-					post_build_status(num, MessageType.NOT_MERGED_MASTER, shaHead)
+			isMerged = merged_master( master_sha(), shaHead )
+			# check to see if master has been properly merged
+			if isMerged:
+				updateDate = pullReq['updated_at'][:-1]
+				dateNow = datetime.strptime(updateDate, '%Y-%m-%dT%H:%M:%S')
+				lastDate = datetime.strptime(pull_req_get_last_update(num), '%Y-%m-%dT%H:%M:%S')
+				# check that it's been updated since we last checked
+				if dateNow > lastDate:
+					pull_req_store_last_update(num, dateNow)
+					
+					# and that the commits inside have changed
+					if shaHead != lastSha:
+						pull_req_store_last_sha(num, shaHead)
+						# all seems ok, so go on to download and build it
+						download_zipball(num, shaHead)
+							
+			else:
+				# if master hasn't been merged in, tell someone to sort it out
+				post_build_status(num, MessageType.NOT_MERGED_MASTER, shaHead)
 
 def zipball_file(sha):
 	return os.path.join(repo_build_dir(), sha + '.zip')
