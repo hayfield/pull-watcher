@@ -114,21 +114,26 @@ def pull_req_error_status(num, err):
 def fetch_pull_reqs():
 	r = fetch_url( repo_url_base() + '/pulls' )
 	data = json.loads(r.text)
+	# loop through the pull reqs
 	for pullReq in data:
 		num = pullReq['number']
 		updateDate = pullReq['updated_at'][:-1]
 		dateNow = datetime.strptime(updateDate, '%Y-%m-%dT%H:%M:%S')
 		lastDate = datetime.strptime(pull_req_get_last_update(num), '%Y-%m-%dT%H:%M:%S')
+		# with each one, check that it's been updated since we last checked
 		if dateNow > lastDate or True:
 			pull_req_store_last_update(num, dateNow)
 			shaHead = pullReq['head']['sha']
 			lastSha = pull_req_get_last_sha(num)
+			# and that the commits inside have changed
 			if shaHead != lastSha or True:
 				pull_req_store_last_sha(num, shaHead)
+				# if it's open and properly merged into master
 				if pullReq['state'] == 'open' and merged_master( master_sha(), shaHead ):
 					# do stuff
 					print 'hi'
 				else:
+					# if master hasn't been merged in, tell someone to sort it out
 					pull_req_error_status(num, MessageType.NOT_MERGED_MASTER)
 
 
