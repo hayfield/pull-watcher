@@ -53,6 +53,10 @@ def get_val(file, defaultValue):
 	else:
 		return defaultValue
 
+def store_val(file, val):
+	f = open(file, 'w')
+	f.write(val)
+
 def repo_url_base():
 	return url_base() + 'repos/' + get_args().user + '/' + get_args().repo
 
@@ -63,9 +67,7 @@ def repo_get_last_update():
 	return get_val( repo_last_update_file(), datetime.min.isoformat() )
 
 def repo_store_last_update(lastUpdate):
-	lastUpdateFile = repo_last_update_file()
-	f = open(lastUpdateFile, 'w')
-	f.write(lastUpdate.isoformat())
+	store_val( repo_last_update_file(), lastUpdate.isoformat() )
 
 def fetch_repo():
 	r = fetch_url( repo_url_base() )
@@ -95,9 +97,7 @@ def pull_req_get_last_update(num):
 	return get_val( pull_req_last_update_file(num), datetime.min.isoformat() )
 
 def pull_req_store_last_update(num, lastUpdate):
-	lastUpdateFile = pull_req_last_update_file(num)
-	f = open(lastUpdateFile, 'w')
-	f.write(lastUpdate.isoformat())
+	store_val( pull_req_last_update_file(num), lastUpdate.isoformat() )
 
 def pull_req_last_sha_file(num):
 	return os.path.join(pull_reqs_dir(), 'last-sha-' + str(num))
@@ -106,9 +106,7 @@ def pull_req_get_last_sha(num):
 	return get_val( pull_req_last_sha_file(num), '' )
 
 def pull_req_store_last_sha(num, lastSha):
-	lastShaFile = pull_req_last_sha_file(num)
-	f = open(lastShaFile, 'w')
-	f.write(lastSha)
+	store_val( pull_req_last_sha_file(num), lastSha )
 
 def pull_req_error_status(num, err):
 	return 5
