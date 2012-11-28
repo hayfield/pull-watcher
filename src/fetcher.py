@@ -136,6 +136,15 @@ def fetch_pull_reqs():
 					# if master hasn't been merged in, tell someone to sort it out
 					pull_req_error_status(num, MessageType.NOT_MERGED_MASTER)
 
+def zipball_file(sha):
+	return os.path.join(repo_build_dir(), sha + '.zip')
+
+def download_zipball(sha):
+	headers = {'Authorization': 'token ' + get_args().token}
+	r = requests.get( repo_url_base() + '/zipball/' + sha, headers=headers )
+	store_val( zipball_file(sha), r.content )
+	#print len(r.content)
+
 def merged_master(base, head):
 	r = fetch_url( repo_url_base() + '/compare/' + base + '...' + head )
 	data = json.loads(r.text)
@@ -153,8 +162,14 @@ def repo_dir():
 def pull_reqs_dir():
 	return os.path.join(repo_dir(), 'pull-requests')
 
+def build_dir():
+	return os.path.join('..', 'build')
+
+def repo_build_dir():
+	return os.path.join( build_dir(), get_args().repo )
+
 def setup_folders():
-	folders = [data_dir(), repo_dir(), pull_reqs_dir()]
+	folders = [data_dir(), repo_dir(), pull_reqs_dir(), build_dir(), repo_build_dir()]
 
 	for folder in folders:
 		if not os.path.exists(folder):
@@ -165,8 +180,7 @@ def main():
 	setup_folders()
 
 	print args
-
-	fetch_pull_reqs()
+	#fetch_pull_reqs()
 	#fetch_url('https://api.github.com/rate_limit')
 	#fetch_repo()
 
