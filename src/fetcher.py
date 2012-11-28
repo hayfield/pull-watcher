@@ -102,6 +102,22 @@ def pull_req_store_last_update(num, lastUpdate):
 	f = open(lastUpdateFile, 'w')
 	f.write(lastUpdate.isoformat())
 
+def pull_req_last_sha_file(num):
+	return os.path.join(pull_reqs_dir(), 'last-sha-' + str(num))
+
+def pull_req_get_last_sha(num):
+	lastShaFile = pull_req_last_sha_file(num)
+	if os.path.exists(lastShaFile):
+		f = open(lastShaFile, 'r')
+		return f.readline()
+	else:
+		return datetime.min.isoformat()
+
+def pull_req_store_last_sha(num, lastSha):
+	lastShaFile = pull_req_last_sha_file(num)
+	f = open(lastShaFile, 'w')
+	f.write(lastSha)
+
 def pull_req_error_status(num, err):
 	return 5
 
