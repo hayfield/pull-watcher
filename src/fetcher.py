@@ -261,7 +261,7 @@ def merged_master(base, head):
 	return True
 
 def data_dir():
-	return os.path.join('..', 'data')
+	return os.path.join('data')
 
 def repo_dir():
 	return os.path.join(data_dir(), get_args().user, get_args().repo)
@@ -270,7 +270,7 @@ def pull_reqs_dir():
 	return os.path.join(repo_dir(), 'pull-requests')
 
 def build_dir():
-	return os.path.join('..', 'build')
+	return os.path.join('build')
 
 def repo_build_dir():
 	return os.path.join( build_dir(), get_args().repo )
@@ -296,14 +296,7 @@ def main():
 	setup_folders()
 
 	print args
-	#post_pending_status(elephant_sha())
-	#print repo_url_statuses(elephant_sha())
-	#fetch_repo()
-	#zip_dir(os.path.join(pull_reqs_dir(), elephant_sha()))
-	#build(1, elephant_sha())
-	#fetch_pull_reqs()
-	#fetch_url('https://api.github.com/rate_limit')
-	#fetch_repo()
+	fetch_repo()
 
 if __name__ == "__main__":
 	main()
