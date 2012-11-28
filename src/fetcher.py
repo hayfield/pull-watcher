@@ -42,6 +42,9 @@ def fetch_url(url):
 def url_base():
 	return 'https://api.github.com/'
 
+def repo_url_base():
+	return url_base() + 'repos/' + get_args().user + '/' + get_args().repo
+
 def repo_last_update_file():
 	return os.path.join(repo_dir(), 'last-update')
 
@@ -59,7 +62,7 @@ def repo_store_last_update(lastUpdate):
 	f.write(lastUpdate.isoformat())
 
 def fetch_repo():
-	r = fetch_url( url_base() + 'repos/' + get_args().user + '/' + get_args().repo )
+	r = fetch_url( repo_url_base() )
 	data = json.loads(r.text)
 	updateDate = data['updated_at'][:-1]
 	dateNow = datetime.strptime(updateDate, '%Y-%m-%dT%H:%M:%S')
@@ -68,8 +71,37 @@ def fetch_repo():
 		repo_store_last_update(dateNow)
 		fetch_pull_reqs()
 
+def pull_req_last_update_file(num):
+	return os.path.join(pull_reqs_dir(), 'last-update-' + str(num))
+
+def pull_req_get_last_update(num):
+	lastUpdateFile = pull_req_last_update_file(num)
+	if os.path.exists(lastUpdateFile):
+		f = open(lastUpdateFile, 'r')
+		return f.readline()
+	else:
+		return datetime.min.isoformat()
+
+def pull_req_store_last_update(num, lastUpdate):
+	lastUpdateFile = pull_req_last_update_file(num)
+	f = open(lastUpdateFile, 'w')
+	f.write(lastUpdate.isoformat())
+
 def fetch_pull_reqs():
-	return 5
+	r = fetch_url( repo_url_base() + '/pulls' )
+	data = json.loads(r.text)
+	for pullReq in data:
+		num = pullReq['number']
+		updateDate = pullReq['updated_at'][:-1]
+		dateNow = datetime.strptime(updateDate, '%Y-%m-%dT%H:%M:%S')
+		lastDate = datetime.strptime(pull_req_get_last_update(num), '%Y-%m-%dT%H:%M:%S')
+		if dateNow > lastDate or True:
+			pull_req_store_last_update(num, dateNow)
+
+	#updateDate = data['updated_at'][-1]
+	#dateNow = datetime.strptime(updateDate, '%Y-%m-%dT%H:%M:%S')
+	#lastDate = datetime.strptime(repo_get_last_update(), '%Y-%m-%dT%H:%M:%S')
+
 
 def data_dir():
 	return os.path.join('..', 'data')
@@ -93,7 +125,7 @@ def main():
 
 	print args
 
-	fetch_url('henry')
+	fetch_pull_reqs()
 	#fetch_url('https://api.github.com/rate_limit')
 	#fetch_repo()
 
