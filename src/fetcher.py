@@ -179,8 +179,11 @@ def fetch_pull_reqs():
 def zipball_file(sha):
 	return os.path.join(repo_build_dir(), sha + '.zip')
 
+def zipball_extract_dir_name(sha):
+	return get_args().user + '-' + get_args().repo + '-' + sha
+
 def zipball_extract_dir(sha):
-	return os.path.join(repo_build_dir(), get_args().user + '-' + get_args().repo + '-' + sha)
+	return os.path.join(repo_build_dir(), zipball_extract_dir_name(sha))
 
 def download_zipball(num, sha):
 	post_build_status(num, MessageType.PENDING, sha)
@@ -193,6 +196,12 @@ def download_zipball(num, sha):
 
 def build_output(sha, name, type):
 	return os.path.join(pull_reqs_dir(), sha + '-' + name + '-' + type + '.out')
+
+def clean_data(sha):
+	p = subprocess.Popen(['rm', sha + '.zip'], cwd=repo_build_dir())
+	p.wait()
+	p = subprocess.Popen(['rm', '-r', zipball_extract_dir_name(sha)], cwd=repo_build_dir())
+	p.wait()
 
 def build(num, sha):
 	fout = open(build_output(sha, 'installdeps', 'out'), 'w')
@@ -222,6 +231,8 @@ def build(num, sha):
 				post_build_status(num, MessageType.RUN_TESTS_FAIL, sha)
 			else:
 				post_build_status(num, MessageType.BUILD_SUCCESSFUL, sha)
+
+	clean_data(sha)
 
 def merged_master(base, head):
 	r = fetch_url( repo_url_base() + '/compare/' + base + '...' + head )
