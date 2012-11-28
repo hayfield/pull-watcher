@@ -202,7 +202,9 @@ def download_zipball(num, sha):
 	build(num, sha)
 
 def build_output(sha, name, type):
-	return os.path.join(pull_reqs_dir(), sha + '-' + name + '-' + type + '.out')
+	dir = os.path.join(pull_reqs_dir(), sha)
+	setup_folder(dir)
+	return os.path.join(dir, name + '-' + type + '.out')
 
 def clean_data(sha):
 	p = subprocess.Popen(['rm', sha + '.zip'], cwd=repo_build_dir())
@@ -264,12 +266,15 @@ def build_dir():
 def repo_build_dir():
 	return os.path.join( build_dir(), get_args().repo )
 
+def setup_folder(name):
+	if not os.path.exists(name):
+		os.makedirs(name)
+
 def setup_folders():
 	folders = [data_dir(), repo_dir(), pull_reqs_dir(), build_dir(), repo_build_dir()]
 
 	for folder in folders:
-		if not os.path.exists(folder):
-			os.makedirs(folder)
+		setup_folder(folder)
 
 def elephant_sha():
 	return get_val(os.path.join('..', 'sha.elephant'), '')
