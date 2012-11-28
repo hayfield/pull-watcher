@@ -219,6 +219,7 @@ def clean_data(sha):
 	p.wait()
 	p = subprocess.Popen(['rm', '-r', zipball_extract_dir_name(sha)], cwd=repo_build_dir())
 	p.wait()
+	zip_dir(os.path.join(pull_reqs_dir(), sha))
 
 def build(num, sha):
 	fout = open(build_output(sha, 'installdeps', 'out'), 'w')
@@ -250,7 +251,6 @@ def build(num, sha):
 				post_build_status(num, MessageType.BUILD_SUCCESSFUL, sha)
 
 	clean_data(sha)
-	zip_dir(os.path.join(pull_reqs_dir(), sha))
 
 def merged_master(base, head):
 	r = fetch_url( repo_url_base() + '/compare/' + base + '...' + head )
