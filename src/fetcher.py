@@ -122,11 +122,14 @@ def fetch_pull_reqs():
 		if dateNow > lastDate or True:
 			pull_req_store_last_update(num, dateNow)
 			shaHead = pullReq['head']['sha']
-			if merged_master( master_sha(), shaHead ):
-				# do stuff
-				print 'hi'
-			else:
-				pull_req_error_status(num, MessageType.NOT_MERGED_MASTER)
+			lastSha = pull_req_get_last_sha(num)
+			if shaHead != lastSha:
+				pull_req_store_last_sha(num, shaHead)
+				if merged_master( master_sha(), shaHead ):
+					# do stuff
+					print 'hi'
+				else:
+					pull_req_error_status(num, MessageType.NOT_MERGED_MASTER)
 
 
 	#updateDate = data['updated_at'][-1]
