@@ -136,11 +136,6 @@ def fetch_pull_reqs():
 					# if master hasn't been merged in, tell someone to sort it out
 					pull_req_error_status(num, MessageType.NOT_MERGED_MASTER)
 
-
-	#updateDate = data['updated_at'][-1]
-	#dateNow = datetime.strptime(updateDate, '%Y-%m-%dT%H:%M:%S')
-	#lastDate = datetime.strptime(repo_get_last_update(), '%Y-%m-%dT%H:%M:%S')
-
 def merged_master(base, head):
 	r = fetch_url( repo_url_base() + '/compare/' + base + '...' + head )
 	data = json.loads(r.text)
