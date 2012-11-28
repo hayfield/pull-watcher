@@ -82,7 +82,7 @@ def fetch_repo():
 	updateDate = data['updated_at'][:-1]
 	dateNow = datetime.strptime(updateDate, '%Y-%m-%dT%H:%M:%S')
 	lastDate = datetime.strptime(repo_get_last_update(), '%Y-%m-%dT%H:%M:%S')
-	if dateNow > lastDate or True:
+	if dateNow > lastDate:
 		repo_store_last_update(dateNow)
 		fetch_pull_reqs()
 
@@ -162,12 +162,12 @@ def fetch_pull_reqs():
 		dateNow = datetime.strptime(updateDate, '%Y-%m-%dT%H:%M:%S')
 		lastDate = datetime.strptime(pull_req_get_last_update(num), '%Y-%m-%dT%H:%M:%S')
 		# with each one, check that it's been updated since we last checked
-		if dateNow > lastDate or True:
+		if dateNow > lastDate:
 			pull_req_store_last_update(num, dateNow)
 			shaHead = pullReq['head']['sha']
 			lastSha = pull_req_get_last_sha(num)
 			# and that the commits inside have changed
-			if shaHead != lastSha or True:
+			if shaHead != lastSha:
 				pull_req_store_last_sha(num, shaHead)
 				# if it's open and properly merged into master
 				if pullReq['state'] == 'open' and merged_master( master_sha(), shaHead ):
