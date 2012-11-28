@@ -82,7 +82,7 @@ def fetch_repo():
 	updateDate = data['updated_at'][:-1]
 	dateNow = datetime.strptime(updateDate, '%Y-%m-%dT%H:%M:%S')
 	lastDate = datetime.strptime(repo_get_last_update(), '%Y-%m-%dT%H:%M:%S')
-	if dateNow > lastDate or True:
+	if dateNow > lastDate:
 		repo_store_last_update(dateNow)
 		fetch_pull_reqs()
 
