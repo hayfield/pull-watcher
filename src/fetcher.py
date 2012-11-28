@@ -6,6 +6,7 @@ import json
 from datetime import datetime
 import os
 import zipfile
+import subprocess
 
 READ_ARGS = False
 MASTER_SHA = False
@@ -131,8 +132,7 @@ def fetch_pull_reqs():
 				pull_req_store_last_sha(num, shaHead)
 				# if it's open and properly merged into master
 				if pullReq['state'] == 'open' and merged_master( master_sha(), shaHead ):
-					# do stuff
-					print 'hi'
+					download_zipball(shaHead)
 				else:
 					# if master hasn't been merged in, tell someone to sort it out
 					pull_req_error_status(num, MessageType.NOT_MERGED_MASTER)
@@ -149,6 +149,23 @@ def download_zipball(sha):
 	#store_val( zipball_file(sha), r.content )
 	file = zipfile.ZipFile(zipball_file(sha))
 	file.extractall(repo_build_dir())
+	build(sha)
+
+def build_output(sha, name, type):
+	return os.path.join(pull_reqs_dir(), sha + '-' + name + '-' + type + '.out')
+
+def build(sha):
+	fout = open(build_output(sha, 'installdeps', 'out'), 'w')
+	ferr = open(build_output(sha, 'installdeps', 'err'), 'w')
+	p = subprocess.Popen(['make', 'install-deps'], stdout=fout, stderr=ferr, cwd=zipball_extract_dir(sha))
+	p.wait()
+	print p.returncode
+	
+	fout2 = open(build_output(sha, 'testall', 'out'), 'w')
+	ferr2 = open(build_output(sha, 'testall', 'err'), 'w')
+	p = subprocess.Popen(['make', 'test-all'], stdout=fout2, stderr=ferr2, cwd=zipball_extract_dir(sha))
+	p.wait()
+	print p.returncode
 
 def merged_master(base, head):
 	r = fetch_url( repo_url_base() + '/compare/' + base + '...' + head )
@@ -188,7 +205,8 @@ def main():
 	setup_folders()
 
 	print args
-	download_zipball(elephant_sha())
+	#fetch_repo()
+	build(elephant_sha())
 	#fetch_pull_reqs()
 	#fetch_url('https://api.github.com/rate_limit')
 	#fetch_repo()
