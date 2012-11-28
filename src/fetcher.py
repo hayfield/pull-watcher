@@ -46,6 +46,13 @@ def fetch_url(url):
 def url_base():
 	return 'https://api.github.com/'
 
+def get_val(file, defaultValue):
+	if os.path.exists(file):
+		f = open(file, 'r')
+		return f.readline()
+	else:
+		return defaultValue
+
 def repo_url_base():
 	return url_base() + 'repos/' + get_args().user + '/' + get_args().repo
 
@@ -53,12 +60,7 @@ def repo_last_update_file():
 	return os.path.join(repo_dir(), 'last-update')
 
 def repo_get_last_update():
-	lastUpdateFile = repo_last_update_file()
-	if os.path.exists(lastUpdateFile):
-		f = open(lastUpdateFile, 'r')
-		return f.readline()
-	else:
-		return datetime.min.isoformat()
+	return get_val( repo_last_update_file(), datetime.min.isoformat() )
 
 def repo_store_last_update(lastUpdate):
 	lastUpdateFile = repo_last_update_file()
@@ -90,12 +92,7 @@ def pull_req_last_update_file(num):
 	return os.path.join(pull_reqs_dir(), 'last-update-' + str(num))
 
 def pull_req_get_last_update(num):
-	lastUpdateFile = pull_req_last_update_file(num)
-	if os.path.exists(lastUpdateFile):
-		f = open(lastUpdateFile, 'r')
-		return f.readline()
-	else:
-		return datetime.min.isoformat()
+	return get_val( pull_req_last_update_file(num), datetime.min.isoformat() )
 
 def pull_req_store_last_update(num, lastUpdate):
 	lastUpdateFile = pull_req_last_update_file(num)
@@ -106,12 +103,7 @@ def pull_req_last_sha_file(num):
 	return os.path.join(pull_reqs_dir(), 'last-sha-' + str(num))
 
 def pull_req_get_last_sha(num):
-	lastShaFile = pull_req_last_sha_file(num)
-	if os.path.exists(lastShaFile):
-		f = open(lastShaFile, 'r')
-		return f.readline()
-	else:
-		return ''
+	return get_val( pull_req_last_sha_file(num), '' )
 
 def pull_req_store_last_sha(num, lastSha):
 	lastShaFile = pull_req_last_sha_file(num)
@@ -134,6 +126,7 @@ def fetch_pull_reqs():
 			shaHead = pullReq['head']['sha']
 			if merged_master( master_sha(), shaHead ):
 				# do stuff
+				print 'hi'
 			else:
 				pull_req_error_status(num, MessageType.NOT_MERGED_MASTER)
 
