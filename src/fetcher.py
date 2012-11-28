@@ -111,7 +111,7 @@ def pull_req_get_last_sha(num):
 		f = open(lastShaFile, 'r')
 		return f.readline()
 	else:
-		return datetime.min.isoformat()
+		return ''
 
 def pull_req_store_last_sha(num, lastSha):
 	lastShaFile = pull_req_last_sha_file(num)
