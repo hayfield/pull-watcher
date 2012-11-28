@@ -206,6 +206,14 @@ def build_output(sha, name, type):
 	setup_folder(dir)
 	return os.path.join(dir, name + '-' + type + '.out')
 
+def zip_dir(dir):
+	zip = zipfile.ZipFile(dir + '.zip', 'w', zipfile.ZIP_DEFLATED)
+	rootlen = len(dir) + 1
+	for base, dirs, files in os.walk(dir):
+		for file in files:
+			fn = os.path.join(base, file)
+			zip.write(fn, fn[rootlen:])
+
 def clean_data(sha):
 	p = subprocess.Popen(['rm', sha + '.zip'], cwd=repo_build_dir())
 	p.wait()
@@ -242,6 +250,7 @@ def build(num, sha):
 				post_build_status(num, MessageType.BUILD_SUCCESSFUL, sha)
 
 	clean_data(sha)
+	zip_dir(os.path.join(pull_reqs_dir(), sha))
 
 def merged_master(base, head):
 	r = fetch_url( repo_url_base() + '/compare/' + base + '...' + head )
@@ -286,7 +295,8 @@ def main():
 	print args
 	#post_pending_status(elephant_sha())
 	#print repo_url_statuses(elephant_sha())
-	fetch_repo()
+	#fetch_repo()
+	zip_dir(os.path.join(pull_reqs_dir(), elephant_sha()))
 	#build(1, elephant_sha())
 	#fetch_pull_reqs()
 	#fetch_url('https://api.github.com/rate_limit')
