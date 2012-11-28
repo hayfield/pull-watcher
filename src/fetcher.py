@@ -16,6 +16,8 @@ class MessageType:
 	INSTALL_DEPS_FAIL = 2
 	BUILD_FAIL = 3
 	RUN_TESTS_FAIL = 4
+	BUILD_SUCCESSFUL = 5
+	PENDING = 6
 
 def get_args():
 	global READ_ARGS
@@ -113,8 +115,43 @@ def pull_req_get_last_sha(num):
 def pull_req_store_last_sha(num, lastSha):
 	store_val( pull_req_last_sha_file(num), lastSha )
 
-def pull_req_error_status(num, err):
-	return 5
+def repo_url_statuses(sha):
+	return repo_url_base() + '/statuses/' + sha + '?access_token=' + get_args().token
+
+def post_status(state, desc, sha):
+	data = {"state": state, "description": desc}
+	r = requests.post( repo_url_statuses(sha), data=json.dumps(data) )
+
+def post_pending_status(sha):
+	post_status('pending', 'Downloading content and running build', sha)
+
+def post_success_status(sha):
+	post_status('success', 'Build and tests ran successfully', sha)
+
+def post_error_status(sha, msg):
+	post_status('error', msg, sha)
+
+def post_failure_status(sha, msg):
+	post_status('failure', msg, sha)
+
+def post_build_status(num, type, sha):
+	msg = ''
+	if type == MessageType.NOT_MERGED_MASTER:
+		msg += 'The contents of master have not been merged into this branch. No building or testing has been attempted.\n'
+		post_failure_status(sha, msg)
+	elif type == MessageType.INSTALL_DEPS_FAIL:
+		msg += 'There was a problem installing dependencies. Building the code and running tests was not attempted.\n'
+		post_error_status(sha, msg)
+	elif type == MessageType.BUILD_FAIL:
+		msg += 'There code did not build successfully. Tests not run.\n'
+		post_error_status(sha, msg)
+	elif type == MessageType.RUN_TESTS_FAIL:
+		msg += 'The tests did not run successfully.\n'
+		post_error_status(sha, msg)
+	elif type == MessageType.BUILD_SUCCESSFUL:
+		post_success_status(sha)
+	elif type == MessageType.PENDING:
+		post_pending_status(sha)
 
 def fetch_pull_reqs():
 	r = fetch_url( repo_url_base() + '/pulls' )
@@ -135,10 +172,10 @@ def fetch_pull_reqs():
 				pull_req_store_last_sha(num, shaHead)
 				# if it's open and properly merged into master
 				if pullReq['state'] == 'open' and merged_master( master_sha(), shaHead ):
-					download_zipball(shaHead)
+					download_zipball(num, shaHead)
 				else:
 					# if master hasn't been merged in, tell someone to sort it out
-					pull_req_error_status(num, MessageType.NOT_MERGED_MASTER)
+					post_build_status(num, MessageType.NOT_MERGED_MASTER, shaHead)
 
 def zipball_file(sha):
 	return os.path.join(repo_build_dir(), sha + '.zip')
@@ -146,18 +183,19 @@ def zipball_file(sha):
 def zipball_extract_dir(sha):
 	return os.path.join(repo_build_dir(), get_args().user + '-' + get_args().repo + '-' + sha)
 
-def download_zipball(sha):
+def download_zipball(num, sha):
+	post_build_status(num, MessageType.PENDING, sha)
 	headers = {'Authorization': 'token ' + get_args().token}
-	#r = requests.get( repo_url_base() + '/zipball/' + sha, headers=headers )
-	#store_val( zipball_file(sha), r.content )
+	r = requests.get( repo_url_base() + '/zipball/' + sha, headers=headers )
+	store_val( zipball_file(sha), r.content )
 	file = zipfile.ZipFile(zipball_file(sha))
 	file.extractall(repo_build_dir())
-	build(sha)
+	build(num, sha)
 
 def build_output(sha, name, type):
 	return os.path.join(pull_reqs_dir(), sha + '-' + name + '-' + type + '.out')
 
-def build(sha):
+def build(num, sha):
 	fout = open(build_output(sha, 'installdeps', 'out'), 'w')
 	ferr = open(build_output(sha, 'installdeps', 'err'), 'w')
 	p = subprocess.Popen(['make', 'install-deps'], stdout=fout, stderr=ferr, cwd=zipball_extract_dir(sha))
@@ -165,7 +203,7 @@ def build(sha):
 	print p.returncode
 
 	if p.returncode != 0:
-		pull_req_error_status(1, MessageType.INSTALL_DEPS_FAIL)
+		post_build_status(num, MessageType.INSTALL_DEPS_FAIL, sha)
 	else:
 		fout = open(build_output(sha, 'buildall', 'out'), 'w')
 		ferr = open(build_output(sha, 'buildall', 'err'), 'w')
@@ -174,7 +212,7 @@ def build(sha):
 		print p.returncode
 
 		if p.returncode != 0:
-			pull_req_error_status(1, MessageType.BUILD_FAIL)
+			post_build_status(num, MessageType.BUILD_FAIL, sha)
 		else:
 			fout = open(build_output(sha, 'testall', 'out'), 'w')
 			ferr = open(build_output(sha, 'testall', 'err'), 'w')
@@ -182,8 +220,9 @@ def build(sha):
 			p.wait()
 
 			if p.returncode != 0:
-				pull_req_error_status(1, MessageType.RUN_TESTS_FAIL)
-			print p.returncode
+				post_build_status(num, MessageType.RUN_TESTS_FAIL, sha)
+			else:
+				post_build_status(num, MessageType.BUILD_SUCCESSFUL, sha)
 
 def merged_master(base, head):
 	r = fetch_url( repo_url_base() + '/compare/' + base + '...' + head )
@@ -223,8 +262,10 @@ def main():
 	setup_folders()
 
 	print args
-	#fetch_repo()
-	build(elephant_sha())
+	#post_pending_status(elephant_sha())
+	#print repo_url_statuses(elephant_sha())
+	fetch_repo()
+	#build(1, elephant_sha())
 	#fetch_pull_reqs()
 	#fetch_url('https://api.github.com/rate_limit')
 	#fetch_repo()
