@@ -286,7 +286,10 @@ def setup_folders():
 		setup_folder(folder)
 
 def elephant_sha():
-	return get_val(os.path.join('..', 'sha.elephant'), '')
+	return elephant_val('sha')
+
+def elephant_val(name):
+	return get_val(os.path.join('..', name + '.elephant'), '')
 
 def main():
 	args = get_args()
@@ -296,7 +299,7 @@ def main():
 	#post_pending_status(elephant_sha())
 	#print repo_url_statuses(elephant_sha())
 	#fetch_repo()
-	zip_dir(os.path.join(pull_reqs_dir(), elephant_sha()))
+	#zip_dir(os.path.join(pull_reqs_dir(), elephant_sha()))
 	#build(1, elephant_sha())
 	#fetch_pull_reqs()
 	#fetch_url('https://api.github.com/rate_limit')
