@@ -95,7 +95,6 @@ def master_sha():
 		MASTER_SHA = data['object']['sha']
 
 	return MASTER_SHA
-	
 
 def pull_req_last_update_file(num):
 	return os.path.join(pull_reqs_dir(), 'last-update-' + str(num))
@@ -200,7 +199,7 @@ def build(num, sha):
 	ferr = open(build_output(sha, 'installdeps', 'err'), 'w')
 	p = subprocess.Popen(['make', 'install-deps'], stdout=fout, stderr=ferr, cwd=zipball_extract_dir(sha))
 	p.wait()
-	print p.returncode
+	#print p.returncode
 
 	if p.returncode != 0:
 		post_build_status(num, MessageType.INSTALL_DEPS_FAIL, sha)
@@ -209,7 +208,7 @@ def build(num, sha):
 		ferr = open(build_output(sha, 'buildall', 'err'), 'w')
 		p = subprocess.Popen(['make', 'build-all'], stdout=fout, stderr=ferr, cwd=zipball_extract_dir(sha))
 		p.wait()
-		print p.returncode
+		#print p.returncode
 
 		if p.returncode != 0:
 			post_build_status(num, MessageType.BUILD_FAIL, sha)
