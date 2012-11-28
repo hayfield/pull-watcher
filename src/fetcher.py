@@ -9,6 +9,9 @@ import os
 READ_ARGS = False
 MASTER_SHA = False
 
+class MessageType:
+	NOT_MERGED_MASTER=1
+
 def get_args():
 	global READ_ARGS
 
@@ -99,6 +102,9 @@ def pull_req_store_last_update(num, lastUpdate):
 	f = open(lastUpdateFile, 'w')
 	f.write(lastUpdate.isoformat())
 
+def pull_req_error_status(num, err):
+	return 5
+
 def fetch_pull_reqs():
 	r = fetch_url( repo_url_base() + '/pulls' )
 	data = json.loads(r.text)
@@ -109,11 +115,24 @@ def fetch_pull_reqs():
 		lastDate = datetime.strptime(pull_req_get_last_update(num), '%Y-%m-%dT%H:%M:%S')
 		if dateNow > lastDate or True:
 			pull_req_store_last_update(num, dateNow)
+			shaHead = pullReq['head']['sha']
+			if merged_master( master_sha(), shaHead ):
+				# do stuff
+			else:
+				pull_req_error_status(num, MessageType.NOT_MERGED_MASTER)
+
 
 	#updateDate = data['updated_at'][-1]
 	#dateNow = datetime.strptime(updateDate, '%Y-%m-%dT%H:%M:%S')
 	#lastDate = datetime.strptime(repo_get_last_update(), '%Y-%m-%dT%H:%M:%S')
 
+def merged_master(base, head):
+	r = fetch_url( repo_url_base() + '/compare/' + base + '...' + head )
+	data = json.loads(r.text)
+	if data['behind_by'] > 0:
+		return False
+
+	return True
 
 def data_dir():
 	return os.path.join('..', 'data')
@@ -137,7 +156,7 @@ def main():
 
 	print args
 
-	print master_sha()
+	fetch_pull_reqs()
 	#fetch_url('https://api.github.com/rate_limit')
 	#fetch_repo()
 
