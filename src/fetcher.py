@@ -12,7 +12,10 @@ READ_ARGS = False
 MASTER_SHA = False
 
 class MessageType:
-	NOT_MERGED_MASTER=1
+	NOT_MERGED_MASTER = 1
+	INSTALL_DEPS_FAIL = 2
+	BUILD_FAIL = 3
+	RUN_TESTS_FAIL = 4
 
 def get_args():
 	global READ_ARGS
@@ -160,12 +163,27 @@ def build(sha):
 	p = subprocess.Popen(['make', 'install-deps'], stdout=fout, stderr=ferr, cwd=zipball_extract_dir(sha))
 	p.wait()
 	print p.returncode
-	
-	fout2 = open(build_output(sha, 'testall', 'out'), 'w')
-	ferr2 = open(build_output(sha, 'testall', 'err'), 'w')
-	p = subprocess.Popen(['make', 'test-all'], stdout=fout2, stderr=ferr2, cwd=zipball_extract_dir(sha))
-	p.wait()
-	print p.returncode
+
+	if p.returncode != 0:
+		pull_req_error_status(1, MessageType.INSTALL_DEPS_FAIL)
+	else:
+		fout = open(build_output(sha, 'buildall', 'out'), 'w')
+		ferr = open(build_output(sha, 'buildall', 'err'), 'w')
+		p = subprocess.Popen(['make', 'build-all'], stdout=fout, stderr=ferr, cwd=zipball_extract_dir(sha))
+		p.wait()
+		print p.returncode
+
+		if p.returncode != 0:
+			pull_req_error_status(1, MessageType.BUILD_FAIL)
+		else:
+			fout = open(build_output(sha, 'testall', 'out'), 'w')
+			ferr = open(build_output(sha, 'testall', 'err'), 'w')
+			p = subprocess.Popen(['make', 'test-all'], stdout=fout, stderr=ferr, cwd=zipball_extract_dir(sha))
+			p.wait()
+
+			if p.returncode != 0:
+				pull_req_error_status(1, MessageType.RUN_TESTS_FAIL)
+			print p.returncode
 
 def merged_master(base, head):
 	r = fetch_url( repo_url_base() + '/compare/' + base + '...' + head )
