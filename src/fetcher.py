@@ -5,6 +5,7 @@ import requests
 import json
 from datetime import datetime
 import os
+import zipfile
 
 READ_ARGS = False
 MASTER_SHA = False
@@ -139,11 +140,15 @@ def fetch_pull_reqs():
 def zipball_file(sha):
 	return os.path.join(repo_build_dir(), sha + '.zip')
 
+def zipball_extract_dir(sha):
+	return os.path.join(repo_build_dir(), get_args().user + '-' + get_args().repo + '-' + sha)
+
 def download_zipball(sha):
 	headers = {'Authorization': 'token ' + get_args().token}
-	r = requests.get( repo_url_base() + '/zipball/' + sha, headers=headers )
-	store_val( zipball_file(sha), r.content )
-	#print len(r.content)
+	#r = requests.get( repo_url_base() + '/zipball/' + sha, headers=headers )
+	#store_val( zipball_file(sha), r.content )
+	file = zipfile.ZipFile(zipball_file(sha))
+	file.extractall(repo_build_dir())
 
 def merged_master(base, head):
 	r = fetch_url( repo_url_base() + '/compare/' + base + '...' + head )
@@ -175,11 +180,15 @@ def setup_folders():
 		if not os.path.exists(folder):
 			os.makedirs(folder)
 
+def elephant_sha():
+	return get_val(os.path.join('..', 'sha.elephant'), '')
+
 def main():
 	args = get_args()
 	setup_folders()
 
 	print args
+	download_zipball(elephant_sha())
 	#fetch_pull_reqs()
 	#fetch_url('https://api.github.com/rate_limit')
 	#fetch_repo()
