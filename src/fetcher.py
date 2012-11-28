@@ -123,9 +123,9 @@ def fetch_pull_reqs():
 			pull_req_store_last_update(num, dateNow)
 			shaHead = pullReq['head']['sha']
 			lastSha = pull_req_get_last_sha(num)
-			if shaHead != lastSha:
+			if shaHead != lastSha or True:
 				pull_req_store_last_sha(num, shaHead)
-				if merged_master( master_sha(), shaHead ):
+				if pullReq['state'] == 'open' and merged_master( master_sha(), shaHead ):
 					# do stuff
 					print 'hi'
 				else:
