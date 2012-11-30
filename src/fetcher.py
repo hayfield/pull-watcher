@@ -164,7 +164,7 @@ def fetch_pull_reqs():
 			shaHead = pullReq['head']['sha']
 			shaBase = pullReq['base']['sha']
 			lastSha = pull_req_get_last_sha(num)
-			isMerged = merged_master( shaBase, shaHead )
+			isMerged = merged_base( shaBase, shaHead )
 			# check to see if master has been properly merged
 			if isMerged:
 				updateDate = pullReq['updated_at'][:-1]
@@ -253,7 +253,7 @@ def build(num, sha):
 
 	clean_data(sha)
 
-def merged_master(base, head):
+def merged_base(base, head):
 	r = fetch_url( repo_url_base() + '/compare/' + base + '...' + head )
 	data = json.loads(r.text)
 	if data['behind_by'] > 0:
