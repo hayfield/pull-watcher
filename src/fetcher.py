@@ -12,7 +12,7 @@ READ_ARGS = False
 MASTER_SHA = False
 
 class MessageType:
-	NOT_MERGED_MASTER = 1
+	NOT_MERGED_BASE = 1
 	INSTALL_DEPS_FAIL = 2
 	BUILD_FAIL = 3
 	RUN_TESTS_FAIL = 4
@@ -135,8 +135,8 @@ def post_failure_status(sha, msg):
 
 def post_build_status(num, type, sha):
 	msg = ''
-	if type == MessageType.NOT_MERGED_MASTER:
-		msg += 'The contents of master have not been merged into this branch. No building or testing has been attempted.\n'
+	if type == MessageType.NOT_MERGED_BASE:
+		msg += 'The contents of the base branch have not been merged into this branch. No building or testing has been attempted.\n'
 		post_failure_status(sha, msg)
 	elif type == MessageType.INSTALL_DEPS_FAIL:
 		msg += 'There was a problem installing dependencies. Building the code and running tests was not attempted.\n'
@@ -182,7 +182,7 @@ def fetch_pull_reqs():
 							
 			else:
 				# if master hasn't been merged in, tell someone to sort it out
-				post_build_status(num, MessageType.NOT_MERGED_MASTER, shaHead)
+				post_build_status(num, MessageType.NOT_MERGED_BASE, shaHead)
 
 def zipball_file(sha):
 	return os.path.join(repo_build_dir(), sha + '.zip')
