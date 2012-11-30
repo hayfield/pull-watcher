@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 
 import argparse
 import requests
@@ -162,8 +162,9 @@ def fetch_pull_reqs():
 			# with each one...
 			num = pullReq['number']
 			shaHead = pullReq['head']['sha']
+			shaBase = pullReq['base']['sha']
 			lastSha = pull_req_get_last_sha(num)
-			isMerged = merged_master( master_sha(), shaHead )
+			isMerged = merged_master( shaBase, shaHead )
 			# check to see if master has been properly merged
 			if isMerged:
 				updateDate = pullReq['updated_at'][:-1]
