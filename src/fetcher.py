@@ -228,6 +228,7 @@ def clean_data(sha):
 	zip_dir(os.path.join(pull_reqs_dir(), sha))
 
 def build(num, sha):
+	msg = ''
 	for target in get_args().maketargets:
 		fout = open(build_output(sha, target, 'out'), 'w')
 		ferr = open(build_output(sha, target, 'err'), 'w')
@@ -236,7 +237,12 @@ def build(num, sha):
 
 		#print p.returncode
 		if p.returncode != 0:
-			post_error_status(sha, 'Error making ' + target + ' - returned: ' + p.returncode)
+			msg += 'Error making ' + target + ' - returned: ' + str(p.returncode) + '\n'
+
+	if len(msg) == 0:
+		post_build_status(num, MessageType.BUILD_SUCCESSFUL, sha)
+	else:
+		post_error_status(sha, msg)
 
 	clean_data(sha)
 
