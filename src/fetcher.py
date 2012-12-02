@@ -38,6 +38,7 @@ def get_args():
 		if args.token == None:
 			f = open(os.path.join('..', 'github-token.elephant'), 'r')
 			args.token = f.readline()
+			f.close()
 		else:
 			args.token = args.token[0]
 
@@ -61,13 +62,16 @@ def url_base():
 def get_val(file, defaultValue):
 	if os.path.exists(file):
 		f = open(file, 'r')
-		return f.readline()
+		line = f.readline()
+		f.close()
+		return line
 	else:
 		return defaultValue
 
 def store_val(file, val):
 	f = open(file, 'w')
 	f.write(val)
+	f.close()
 
 def repo_url_base():
 	return url_base() + 'repos/' + get_args().user + '/' + get_args().repo
@@ -238,6 +242,9 @@ def build(num, sha):
 		#print p.returncode
 		if p.returncode != 0:
 			msg += 'Error making ' + target + ' - returned: ' + str(p.returncode) + '\n'
+
+		fout.close()
+		ferr.close()
 
 	if len(msg) == 0:
 		post_build_status(num, MessageType.BUILD_SUCCESSFUL, sha)
