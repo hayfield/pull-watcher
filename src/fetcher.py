@@ -27,6 +27,7 @@ def get_args():
 		parser.add_argument('-user', type=str, nargs=1)
 		parser.add_argument('-repo', type=str, nargs=1)
 		parser.add_argument('-token', type=str, nargs=1)
+		parser.add_argument('-maketargets', type=str, nargs=argparse.REMAINDER)
 		args = parser.parse_args()
 
 		args.user = args.user[0]
