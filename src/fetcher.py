@@ -128,7 +128,7 @@ def post_error_status(sha, msg):
 def post_failure_status(sha, msg):
 	post_status('failure', msg, sha)
 
-def post_build_status(num, type, sha):
+def post_build_status(type, sha):
 	msg = ''
 	if type == MessageType.NOT_MERGED_BASE:
 		msg += 'The contents of the base branch have not been merged into this branch. No building or testing has been attempted.\n'
@@ -164,11 +164,11 @@ def fetch_pull_reqs():
 					if shaHead != lastSha:
 						pull_req_store_last_sha(num, shaHead)
 						# all seems ok, so go on to download and build it
-						download_zipball(num, shaHead)
+						download_zipball(shaHead)
 							
 			else:
 				# if the base hasn't been merged in, tell someone to sort it out
-				post_build_status(num, MessageType.NOT_MERGED_BASE, shaHead)
+				post_build_status(MessageType.NOT_MERGED_BASE, shaHead)
 
 def zipball_file(sha):
 	return os.path.join(repo_build_dir(), sha + '.zip')
@@ -179,13 +179,13 @@ def zipball_extract_dir_name(sha):
 def zipball_extract_dir(sha):
 	return os.path.join(repo_build_dir(), zipball_extract_dir_name(sha))
 
-def download_zipball(num, sha):
-	post_build_status(num, MessageType.PENDING, sha)
+def download_zipball(sha):
+	post_build_status(MessageType.PENDING, sha)
 	r = fetch_url( repo_url_base() + '/zipball/' + sha )
 	store_val( zipball_file(sha), r.content )
 	file = zipfile.ZipFile(zipball_file(sha))
 	file.extractall(repo_build_dir())
-	build(num, sha)
+	build(sha)
 
 def build_output(sha, name, type):
 	dir = os.path.join(pull_reqs_dir(), sha)
@@ -207,7 +207,7 @@ def clean_data(sha):
 	p.wait()
 	zip_dir(os.path.join(pull_reqs_dir(), sha))
 
-def build(num, sha):
+def build(sha):
 	msg = ''
 	for target in get_args().maketargets:
 		fout = open(build_output(sha, target, 'out'), 'w')
@@ -223,7 +223,7 @@ def build(num, sha):
 		ferr.close()
 
 	if len(msg) == 0:
-		post_build_status(num, MessageType.BUILD_SUCCESSFUL, sha)
+		post_build_status(MessageType.BUILD_SUCCESSFUL, sha)
 	else:
 		post_error_status(sha, msg)
 
