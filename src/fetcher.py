@@ -170,7 +170,7 @@ def fetch_pull_reqs():
 			shaBase = pullReq['base']['sha']
 			lastSha = pull_req_get_last_sha(num)
 			isMerged = merged_base( shaBase, shaHead )
-			# check to see if master has been properly merged
+			# check to see if the base has been properly merged
 			if isMerged:
 				updateDate = pullReq['updated_at'][:-1]
 				dateNow = datetime.strptime(updateDate, '%Y-%m-%dT%H:%M:%S')
