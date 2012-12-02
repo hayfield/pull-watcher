@@ -50,7 +50,7 @@ def get_args():
 
 def fetch_url(url):
 	print url
-	if url.find('https://api.github.com') == 0:
+	if url.find( url_base() ) == 0:
 		headers = {'Authorization': 'token ' + get_args().token}
 		r = requests.get( url, headers=headers )
 		return r
