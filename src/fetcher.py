@@ -190,7 +190,7 @@ def fetch_pull_reqs():
 						download_zipball(num, shaHead)
 							
 			else:
-				# if master hasn't been merged in, tell someone to sort it out
+				# if the base hasn't been merged in, tell someone to sort it out
 				post_build_status(num, MessageType.NOT_MERGED_BASE, shaHead)
 
 def zipball_file(sha):
