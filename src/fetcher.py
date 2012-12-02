@@ -33,7 +33,7 @@ def get_args():
 
 		args.user = args.user[0]
 		args.repo = args.repo[0]
-		print args
+		#print args
 
 		if args.token == None:
 			f = open(os.path.join('..', 'github-token.elephant'), 'r')
@@ -52,8 +52,8 @@ def get_args():
 def fetch_url(url):
 	print url
 	if url.find('https://api.github.com') == 0:
-		r = requests.get(url + '?access_token=' + get_args().token)
-		#print r.text
+		headers = {'Authorization': 'token ' + get_args().token}
+		r = requests.get( url, headers=headers )
 		return r
 
 def url_base():
@@ -204,8 +204,7 @@ def zipball_extract_dir(sha):
 
 def download_zipball(num, sha):
 	post_build_status(num, MessageType.PENDING, sha)
-	headers = {'Authorization': 'token ' + get_args().token}
-	r = requests.get( repo_url_base() + '/zipball/' + sha, headers=headers )
+	r = fetch_url( repo_url_base() + '/zipball/' + sha )
 	store_val( zipball_file(sha), r.content )
 	file = zipfile.ZipFile(zipball_file(sha))
 	file.extractall(repo_build_dir())
