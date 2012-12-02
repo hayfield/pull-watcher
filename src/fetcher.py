@@ -12,9 +12,6 @@ READ_ARGS = False
 
 class MessageType:
 	NOT_MERGED_BASE = 1
-	INSTALL_DEPS_FAIL = 2
-	BUILD_FAIL = 3
-	RUN_TESTS_FAIL = 4
 	BUILD_SUCCESSFUL = 5
 	PENDING = 6
 	MAKE_FAIL = 7
@@ -136,15 +133,6 @@ def post_build_status(num, type, sha):
 	if type == MessageType.NOT_MERGED_BASE:
 		msg += 'The contents of the base branch have not been merged into this branch. No building or testing has been attempted.\n'
 		post_failure_status(sha, msg)
-	elif type == MessageType.INSTALL_DEPS_FAIL:
-		msg += 'There was a problem installing dependencies. Building the code and running tests was not attempted.\n'
-		post_error_status(sha, msg)
-	elif type == MessageType.BUILD_FAIL:
-		msg += 'There code did not build successfully. Tests not run.\n'
-		post_error_status(sha, msg)
-	elif type == MessageType.RUN_TESTS_FAIL:
-		msg += 'The tests did not run successfully.\n'
-		post_error_status(sha, msg)
 	elif type == MessageType.BUILD_SUCCESSFUL:
 		post_success_status(sha)
 	elif type == MessageType.PENDING:
