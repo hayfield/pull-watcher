@@ -18,6 +18,7 @@ class MessageType:
 	RUN_TESTS_FAIL = 4
 	BUILD_SUCCESSFUL = 5
 	PENDING = 6
+	MAKE_FAIL = 7
 
 def get_args():
 	global READ_ARGS
@@ -39,6 +40,9 @@ def get_args():
 			args.token = f.readline()
 		else:
 			args.token = args.token[0]
+
+		if args.maketargets == None:
+			args.maketargets = []
 
 		READ_ARGS = args
 	
@@ -224,33 +228,15 @@ def clean_data(sha):
 	zip_dir(os.path.join(pull_reqs_dir(), sha))
 
 def build(num, sha):
-	fout = open(build_output(sha, 'installdeps', 'out'), 'w')
-	ferr = open(build_output(sha, 'installdeps', 'err'), 'w')
-	p = subprocess.Popen(['make', 'install-deps'], stdout=fout, stderr=ferr, cwd=zipball_extract_dir(sha))
-	p.wait()
-	#print p.returncode
-
-	if p.returncode != 0:
-		post_build_status(num, MessageType.INSTALL_DEPS_FAIL, sha)
-	else:
-		fout = open(build_output(sha, 'buildall', 'out'), 'w')
-		ferr = open(build_output(sha, 'buildall', 'err'), 'w')
-		p = subprocess.Popen(['make', 'build-all'], stdout=fout, stderr=ferr, cwd=zipball_extract_dir(sha))
+	for target in get_args().maketargets:
+		fout = open(build_output(sha, target, 'out'), 'w')
+		ferr = open(build_output(sha, target, 'err'), 'w')
+		p = subprocess.Popen(['make', target], stdout=fout, stderr=ferr, cwd=zipball_extract_dir(sha))
 		p.wait()
+
 		#print p.returncode
-
 		if p.returncode != 0:
-			post_build_status(num, MessageType.BUILD_FAIL, sha)
-		else:
-			fout = open(build_output(sha, 'testall', 'out'), 'w')
-			ferr = open(build_output(sha, 'testall', 'err'), 'w')
-			p = subprocess.Popen(['make', 'test-all'], stdout=fout, stderr=ferr, cwd=zipball_extract_dir(sha))
-			p.wait()
-
-			if p.returncode != 0:
-				post_build_status(num, MessageType.RUN_TESTS_FAIL, sha)
-			else:
-				post_build_status(num, MessageType.BUILD_SUCCESSFUL, sha)
+			post_error_status(sha, 'Error making ' + target + ' - returned: ' + p.returncode)
 
 	clean_data(sha)
 
