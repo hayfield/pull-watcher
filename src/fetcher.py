@@ -9,7 +9,6 @@ import zipfile
 import subprocess
 
 READ_ARGS = False
-MASTER_SHA = False
 
 class MessageType:
 	NOT_MERGED_BASE = 1
@@ -94,16 +93,6 @@ def fetch_repo():
 	if dateNow > lastDate:
 		repo_store_last_update(dateNow)
 		fetch_pull_reqs()
-
-def master_sha():
-	global MASTER_SHA
-	
-	if type(MASTER_SHA) is bool:
-		r = fetch_url( repo_url_base() + '/git/refs/heads/master' )
-		data = json.loads(r.text)
-		MASTER_SHA = data['object']['sha']
-
-	return MASTER_SHA
 
 def pull_req_last_update_file(num):
 	return os.path.join(pull_reqs_dir(), 'last-update-' + str(num))
