@@ -120,7 +120,7 @@ def post_pending_status(sha):
 	post_status('pending', 'Downloading content and running build', sha)
 
 def post_success_status(sha):
-	post_status('success', 'Build and tests ran successfully', sha)
+	post_status('success', 'Build and tests ran successfully. Make targets: ' + ', '.join(get_args().maketargets), sha)
 
 def post_error_status(sha, msg):
 	post_status('error', msg, sha)
