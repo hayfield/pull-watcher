@@ -266,15 +266,28 @@ def setup_folders():
 def elephant_sha():
 	return elephant_val('sha')
 
+def elephant_file(name):
+	return os.path.join(base_dir(), '..', name + '.elephant')
+
 def elephant_val(name):
-	return get_val(os.path.join(base_dir(), '..', name + '.elephant'), '')
+	return get_val(elephant_file(name), '')
+
+def store_elephant(name, val):
+	store_val(elephant_file(name), val)
 
 def main():
-	args = get_args()
-	setup_folders()
+	lockval = 'superstronglock'
 
-	print args
-	fetch_repo()
+	if not elephant_val('lock') == lockval:
+		store_elephant('lock', lockval)
+
+		args = get_args()
+		setup_folders()
+
+		print args
+		fetch_repo()
+
+		store_elephant('lock', '')
 
 if __name__ == "__main__":
 	main()
