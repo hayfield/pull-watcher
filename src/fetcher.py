@@ -237,8 +237,11 @@ def merged_base(base, head):
 
 	return True
 
+def base_dir():
+	return os.path.dirname(os.path.realpath(__file__))
+
 def data_dir():
-	return os.path.join('data')
+	return os.path.join(base_dir(), 'data')
 
 def repo_dir():
 	return os.path.join(data_dir(), get_args().user, get_args().repo)
@@ -247,10 +250,10 @@ def pull_reqs_dir():
 	return os.path.join(repo_dir(), 'pull-requests')
 
 def build_dir():
-	return os.path.join('build')
+	return os.path.join(base_dir(), 'build')
 
 def repo_build_dir():
-	return os.path.join( build_dir(), get_args().repo )
+	return os.path.join(build_dir(), get_args().repo)
 
 def setup_folder(name):
 	if not os.path.exists(name):
@@ -266,7 +269,7 @@ def elephant_sha():
 	return elephant_val('sha')
 
 def elephant_val(name):
-	return get_val(os.path.join('..', name + '.elephant'), '')
+	return get_val(os.path.join(base_dir(), '..', name + '.elephant'), '')
 
 def main():
 	args = get_args()
