@@ -32,9 +32,7 @@ def get_args():
 		#print args
 
 		if args.token == None:
-			f = open(os.path.join('..', 'github-token.elephant'), 'r')
-			args.token = f.readline()
-			f.close()
+			args.token = elephant_val('github-token')
 		else:
 			args.token = args.token[0]
 
