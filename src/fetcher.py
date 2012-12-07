@@ -277,17 +277,17 @@ def store_elephant(name, val):
 
 def main():
 	lockval = 'superstronglock'
+	args = get_args()
+	lockfile = 'lock-' + args.user + '-' + args.repo
+	if not elephant_val(lockfile) == lockval:
+		store_elephant(lockfile, lockval)
 
-	if not elephant_val('lock') == lockval:
-		store_elephant('lock', lockval)
-
-		args = get_args()
 		setup_folders()
 
 		print args
 		fetch_repo()
 
-		store_elephant('lock', '')
+		store_elephant(lockfile, '')
 
 if __name__ == "__main__":
 	main()
