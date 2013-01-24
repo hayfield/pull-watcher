@@ -5,3 +5,5 @@
 Intended to be fairly lightweight so it can be used in a low-RAM environment.
 
 Should only be used on private repos where only trusted persons have access.
+
+Lacks any sort of error checking, so is likely to break and not work much outside a closed environment.
